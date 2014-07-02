@@ -21,6 +21,22 @@ function ejercicio_theme($existing, $type, $theme, $path) {
   );
 }
 
+/**
+ * Implements hook_menu().
+ */
+function ejercicio_menu() {
+  $items['admin/config/system/ejercicio'] = array(
+    'title' => 'Opciones de ejercicio',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ejercicio_settings_form'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'ejercicio.pages.inc',
+  );
+
+  return $items;
+}
+
 
 /**
  * Implements hook_block_info().
