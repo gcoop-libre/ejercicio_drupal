@@ -42,9 +42,14 @@ function ejercicio_menu() {
  * Implements hook_block_info().
  */
 function ejercicio_block_info() {
-  $blocks['hola-mundo'] = array(
-    'info' => t('Bloque hola mundo'),
-  );
+  $bloques = variable_get('ejercicio_cantidad_de_bloques', 1);
+  $bloques = intval($bloques);
+  $blocks = array();
+  for ($i = 0; $i < $bloques; ++$i) {
+    $blocks[$i] = array(
+      'info' => t('Bloque de ejercicio @index', array('@index' => $i + 1)),
+    );
+  }
 
   return $blocks;
 }
@@ -52,36 +57,38 @@ function ejercicio_block_info() {
 /**
  * Implements hook_block_view().
  */
-function ejercicio_block_view() {
+function ejercicio_block_view($delta = '') {
   $tipos = node_type_get_names();
-  $cantidad = variable_get('ejercicio_cantidad', 5);
-  $tipo = variable_get('ejercicio_tipo', NULL);
-  $nodos = _ejercicio_get_nodos($cantidad, $tipo);
+  $cantidad = variable_get('ejercicio_cantidad_' . $delta, 5);
+  $tipo = variable_get('ejercicio_tipo_' . $delta, NULL);
 
-  return array(
-    'subject' => t('Hola mundo'),
-    'content' => theme('ejercicio_ultimos_nodos', array('cantidad' => $cantidad, 'tipo' => $tipos[$tipo], 'titulos' => $nodos)),
-  );
+  if ($tipo) {
+    $nodos = _ejercicio_get_nodos($cantidad, $tipo);
+    return array(
+      'subject' => t('Hola mundo'),
+      'content' => theme('ejercicio_ultimos_nodos', array('cantidad' => $cantidad, 'tipo' => $tipos[$tipo], 'titulos' => $nodos)),
+    );
+  }
 }
 
 /**
  * Implements hook_block_save().
  */
 function ejercicio_block_save($delta = '', $edit = array()) {
-  variable_set('ejercicio_cantidad', $edit['cantidad']);
-  variable_set('ejercicio_tipo', $edit['tipo']);
+  variable_set('ejercicio_cantidad_' . $delta, $edit['cantidad']);
+  variable_set('ejercicio_tipo_' . $delta, $edit['tipo']);
 }
 
 /**
  * Implements hook_block_configure().
  */
-function ejercicio_block_configure() {
+function ejercicio_block_configure($delta = '') {
   $form['cantidad'] = array(
     '#type' => 'textfield',
     '#title' => t('Cantidad'),
     '#description' => t('Seleccionar la cantidad de nodos a mostrar'),
     '#size' => 4,
-    '#default_value' => variable_get('ejercicio_cantidad', 5),
+    '#default_value' => variable_get('ejercicio_cantidad_' . $delta, 5),
   );
   $form['tipo'] = array(
     '#type' => 'select',
@@ -90,7 +97,7 @@ function ejercicio_block_configure() {
     '#options' => node_type_get_names(),
     '#empty_option' => t('- Seleccionar -'),
     '#empty_value' => '',
-    '#default_value' => variable_get('ejercicio_tipo', ''),
+    '#default_value' => variable_get('ejercicio_tipo_' . $delta, ''),
   );
 
   return $form;
