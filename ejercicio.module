@@ -6,6 +6,23 @@
  */
 
 /**
+ * Implements hook_theme().
+ */
+function ejercicio_theme($existing, $type, $theme, $path) {
+  return array(
+    'ejercicio_ultimos_nodos' => array(
+      'template' => 'ejercicio-ultimos-nodos',
+      'variables' => array(
+        'cantidad' => NULL,
+        'tipo' => NULL,
+        'titulos' => array(),
+      ),
+    ),
+  );
+}
+
+
+/**
  * Implements hook_block_info().
  */
 function ejercicio_block_info() {
@@ -21,21 +38,13 @@ function ejercicio_block_info() {
  */
 function ejercicio_block_view() {
   $tipos = node_type_get_names();
-  $tipo = variable_get('ejercicio_tipo', FALSE);
+  $cantidad = variable_get('ejercicio_cantidad', 5);
+  $tipo = variable_get('ejercicio_tipo', NULL);
+  $nodos = _ejercicio_get_nodos($cantidad, $tipo);
+
   return array(
     'subject' => t('Hola mundo'),
-    'content' => array(
-      'cantidad' => array(
-        '#markup' => variable_get('ejercicio_cantidad', 'No ingresado'),
-        '#prefix' => '<strong>',
-        '#suffix' => '</strong>',
-      ),
-      'tipo' => array(
-        '#markup' => $tipo ? $tipos[$tipo] : 'No seleccionado',
-        '#prefix' => '<div>',
-        '#suffix' => '</div>',
-      ),
-    ),
+    'content' => theme('ejercicio_ultimos_nodos', array('cantidad' => $cantidad, 'tipo' => $tipos[$tipo], 'titulos' => $nodos)),
   );
 }
 
@@ -69,4 +78,23 @@ function ejercicio_block_configure() {
   );
 
   return $form;
+}
+
+function _ejercicio_get_nodos($cantidad, $tipo) {
+  $query = db_select('node', 'n')
+    ->fields('n', array('nid', 'title'))
+    ->orderBy('created', 'DESC')
+    ->range(0, intval($cantidad));
+
+  if ($tipo) {
+    $query->condition('n.type', $tipo);
+  }
+
+  $nodos = $query->execute();
+  $links = array();
+  foreach ($nodos as $nodo) {
+    $links[] = l($nodo->title, 'node/' . $nodo->nid, array('absolute' => TRUE));
+  }
+
+  return $links;
 }
