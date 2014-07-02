@@ -20,8 +20,53 @@ function ejercicio_block_info() {
  * Implements hook_block_view().
  */
 function ejercicio_block_view() {
+  $tipos = node_type_get_names();
+  $tipo = variable_get('ejercicio_tipo', FALSE);
   return array(
     'subject' => t('Hola mundo'),
-    'content' => '<div class="bloque-hola-mundo">Hola Mundo!!</div>',
+    'content' => array(
+      'cantidad' => array(
+        '#markup' => variable_get('ejercicio_cantidad', 'No ingresado'),
+        '#prefix' => '<strong>',
+        '#suffix' => '</strong>',
+      ),
+      'tipo' => array(
+        '#markup' => $tipo ? $tipos[$tipo] : 'No seleccionado',
+        '#prefix' => '<div>',
+        '#suffix' => '</div>',
+      ),
+    ),
   );
+}
+
+/**
+ * Implements hook_block_save().
+ */
+function ejercicio_block_save($delta = '', $edit = array()) {
+  variable_set('ejercicio_cantidad', $edit['cantidad']);
+  variable_set('ejercicio_tipo', $edit['tipo']);
+}
+
+/**
+ * Implements hook_block_configure().
+ */
+function ejercicio_block_configure() {
+  $form['cantidad'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Cantidad'),
+    '#description' => t('Seleccionar la cantidad de nodos a mostrar'),
+    '#size' => 4,
+    '#default_value' => variable_get('ejercicio_cantidad', 5),
+  );
+  $form['tipo'] = array(
+    '#type' => 'select',
+    '#title' => t('Tipo de contenido'),
+    '#description' => t('Seleccionar el tipo de contenido a mostrar'),
+    '#options' => node_type_get_names(),
+    '#empty_option' => t('- Seleccionar -'),
+    '#empty_value' => '',
+    '#default_value' => variable_get('ejercicio_tipo', ''),
+  );
+
+  return $form;
 }
