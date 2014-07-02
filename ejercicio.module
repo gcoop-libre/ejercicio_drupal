@@ -4,3 +4,24 @@
  * @file
  * Ejercicio básico para la capacitación.
  */
+
+/**
+ * Implements hook_block_info().
+ */
+function ejercicio_block_info() {
+  $blocks['hola-mundo'] = array(
+    'info' => t('Bloque hola mundo'),
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function ejercicio_block_view() {
+  return array(
+    'subject' => t('Hola mundo'),
+    'content' => '<div class="bloque-hola-mundo">Hola Mundo!!</div>',
+  );
+}
