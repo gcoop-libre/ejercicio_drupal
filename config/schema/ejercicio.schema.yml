@@ -1,0 +1,10 @@
+block.settings.ejercicio_hola_mundo:
+  type: block_settings
+  label: 'Example configurable cantidad'
+  mapping:
+    block_ejercicio_cantidad:
+      type: text
+      label: 'Cantidad de nodos'
+    block_ejercicio_tipo:
+      type: select
+      label: 'Cantidad de tipos de contenido'
