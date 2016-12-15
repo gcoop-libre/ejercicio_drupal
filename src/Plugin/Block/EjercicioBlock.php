@@ -4,6 +4,8 @@ namespace Drupal\ejercicio\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Link;
+use Drupal\Core\Url;
 
 /**
  * Provides a 'Example: empty block' block.
@@ -69,10 +71,40 @@ class EjercicioBlock extends BlockBase {
     // on the site. See BlockExampleTest::testBlockExampleBasic().
     $tipos = node_type_get_names();
     $tipo = $this->configuration['block_ejercicio_tipo'];
-    return array(
-      '#type' => 'markup',
-      '#markup' => $this->t('<ul><li>Cantidad: %cant</li><li>Tipo: %tipo</li>', array('%cant' => $this->configuration['block_ejercicio_cantidad'], '%tipo' => $tipo ? $tipos[$tipo] : 'No seleccionado')),
-    );
+    $cantidad = $this->configuration['block_ejercicio_cantidad'];
+    $tipo_text = $tipo ? $tipos[$tipo] : 'No seleccionado';
+    $nodos = $this->ejercicio_get_nodos($cantidad, $tipo);
+
+    $build = [];
+    $build['#theme'] = 'ejercicio_ultimos_nodos';
+    $build['#cantidad'] = $cantidad;
+    $build['#tipo'] = $tipo_text;
+    $build['#titulos'] = $nodos;
+    return $build;
   }
 
+  public function ejercicio_get_nodos($cantidad, $tipo) {
+    $query = \Drupal::entityQuery('node');
+    $query->condition('status', 1);
+    $query->condition('type', $tipo);
+    $query->sort('created', 'DESC');
+    $query->range(0, intval($cantidad));
+    $nids = $query->execute();
+    $nodes = \Drupal\node\Entity\Node::loadMultiple($nids); 
+
+    foreach ($nodes as $node) {
+      $url = Url::fromUri('base://node/'.$node->id());
+      $link_options = array(
+        'attributes' => array(
+          'class' => array(
+            'node-'.$node->id(),
+          ),
+        ),
+      );
+      $url->setOptions($link_options);
+      $link = Link::fromTextAndUrl(t($node->getTitle()), $url )->toString();
+      $links[] = $link;
+    }
+    return $links;
+  }
 }

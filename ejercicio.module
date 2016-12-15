@@ -1,1 +1,13 @@
 <?php
+
+function ejercicio_theme($existing, $type, $theme, $path) {
+  return array(
+    'ejercicio_ultimos_nodos' => array(
+      'variables' => array(
+        'cantidad' => NULL,
+        'tipo' => NULL,
+        'titulos' => array(),
+      ),
+    ),
+  );
+}
